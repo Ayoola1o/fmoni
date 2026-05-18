@@ -2,16 +2,24 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
-import { Lock, Mail, Smartphone, ArrowRight } from 'lucide-react-native';
+import { Lock, Mail, Smartphone, ArrowRight, AlertCircle } from 'lucide-react-native';
+import { useAuth } from '../../context/AuthContext';
 
 export default function LoginScreen() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const { signIn } = useAuth();
   const router = useRouter();
 
-  const handleLogin = () => {
-    // Mock login logic
-    router.replace('/(tabs)');
+  const handleLogin = async () => {
+    setError('');
+    const success = await signIn(identifier, password);
+    if (success) {
+      router.replace('/(tabs)');
+    } else {
+      setError('Invalid phone number or PIN');
+    }
   };
 
   return (
@@ -29,14 +37,22 @@ export default function LoginScreen() {
             <Text style={styles.title}>Welcome Back</Text>
             <Text style={styles.subtitle}>Enter your details to access your account</Text>
 
+            {error ? (
+              <View style={styles.errorBox}>
+                <AlertCircle size={16} color={colors.error} />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
+
             <View style={styles.inputWrapper}>
               <View style={styles.inputIcon}>
-                <Mail size={20} color={colors.primary} />
+                <Smartphone size={20} color={colors.primary} />
               </View>
               <TextInput
                 style={styles.input}
-                placeholder="Email or Phone Number"
+                placeholder="Phone Number"
                 placeholderTextColor={colors.textMuted}
+                keyboardType="phone-pad"
                 value={identifier}
                 onChangeText={setIdentifier}
               />
@@ -122,6 +138,20 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: 32,
     textAlign: 'center',
+  },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(231, 111, 81, 0.1)',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 13,
+    marginLeft: 8,
+    fontWeight: '600',
   },
   inputWrapper: {
     flexDirection: 'row',

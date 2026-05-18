@@ -1,13 +1,10 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, TextInput } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
 import { colors } from '../../theme/colors';
 import { 
   Send, 
-  ReceiptText, 
   QrCode, 
-  Download, 
   ChevronRight, 
-  Search,
   User,
   ArrowUpRight,
   ArrowDownLeft,
@@ -17,9 +14,11 @@ import {
   Globe
 } from 'lucide-react-native';
 import GlassCard from '../../components/GlassCard';
+import { useRouter } from 'expo-router';
 
 export default function TransactScreen() {
-  const [activeTab, setActiveTab] = React.useState('send'); // 'send' or 'pay'
+  const router = useRouter();
+  const [activeTab, setActiveTab] = React.useState('send');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -66,11 +65,13 @@ export default function TransactScreen() {
                 icon={<User size={20} color={colors.primary} />} 
                 title="To fmoni User" 
                 desc="Send to phone, email or tag" 
+                onPress={() => router.push('/transact/transfer')}
               />
               <TransferOption 
                 icon={<ArrowUpRight size={20} color={colors.primary} />} 
                 title="To Other Banks" 
                 desc="Send to any Nigerian bank account" 
+                onPress={() => router.push('/transact/transfer')}
               />
               <TransferOption 
                 icon={<QrCode size={20} color={colors.primary} />} 
@@ -83,10 +84,26 @@ export default function TransactScreen() {
           <>
             {/* Bill Categories */}
             <View style={styles.billGrid}>
-              <BillCategory icon={<Smartphone size={24} color="#FF8C42" />} label="Airtime" />
-              <BillCategory icon={<Globe size={24} color="#4361EE" />} label="Data" />
-              <BillCategory icon={<Zap size={24} color="#F7B801" />} label="Electricity" />
-              <BillCategory icon={<Tv size={24} color="#7209B7" />} label="Cable TV" />
+              <BillCategory 
+                icon={<Smartphone size={24} color="#FF8C42" />} 
+                label="Airtime" 
+                onPress={() => router.push({ pathname: '/transact/bills', params: { type: 'Airtime' } })}
+              />
+              <BillCategory 
+                icon={<Globe size={24} color="#4361EE" />} 
+                label="Data" 
+                onPress={() => router.push({ pathname: '/transact/bills', params: { type: 'Data' } })}
+              />
+              <BillCategory 
+                icon={<Zap size={24} color="#F7B801" />} 
+                label="Electricity" 
+                onPress={() => router.push({ pathname: '/transact/bills', params: { type: 'Electricity' } })}
+              />
+              <BillCategory 
+                icon={<Tv size={24} color="#7209B7" />} 
+                label="Cable TV" 
+                onPress={() => router.push({ pathname: '/transact/bills', params: { type: 'Cable TV' } })}
+              />
             </View>
 
             {/* Recent Bills */}
@@ -124,8 +141,8 @@ const ContactItem = ({ name, isAdd }: { name: string, isAdd?: boolean }) => (
   </TouchableOpacity>
 );
 
-const TransferOption = ({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) => (
-  <TouchableOpacity style={styles.optionCard}>
+const TransferOption = ({ icon, title, desc, onPress }: { icon: React.ReactNode, title: string, desc: string, onPress?: () => void }) => (
+  <TouchableOpacity style={styles.optionCard} onPress={onPress}>
     <View style={styles.optionIcon}>{icon}</View>
     <View style={styles.optionInfo}>
       <Text style={styles.optionTitle}>{title}</Text>
@@ -135,8 +152,8 @@ const TransferOption = ({ icon, title, desc }: { icon: React.ReactNode, title: s
   </TouchableOpacity>
 );
 
-const BillCategory = ({ icon, label }: { icon: React.ReactNode, label: string }) => (
-  <TouchableOpacity style={styles.billItem}>
+const BillCategory = ({ icon, label, onPress }: { icon: React.ReactNode, label: string, onPress?: () => void }) => (
+  <TouchableOpacity style={styles.billItem} onPress={onPress}>
     <View style={styles.billIconContainer}>{icon}</View>
     <Text style={styles.billLabel}>{label}</Text>
   </TouchableOpacity>

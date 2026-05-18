@@ -22,29 +22,33 @@ import {
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import GlassCard from '../../components/GlassCard';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { user, signOut } = useAuth();
   const [showSettings, setShowSettings] = React.useState(false);
 
   if (showSettings) {
     return <SettingsScreen onBack={() => setShowSettings(false)} />;
   }
 
+  if (!user) return null;
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.header}>
-        <View style={styles.profileSummary}>
+        <TouchableOpacity style={styles.profileSummary} onPress={() => router.push('/profile/details')}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>SJ</Text>
+            <Text style={styles.avatarText}>{user.full_name.split(' ').map(n => n[0]).join('')}</Text>
           </View>
           <View>
-            <Text style={styles.name}>Sarah Johnson</Text>
-            <Text style={styles.balance}>₦88,967.98</Text>
+            <Text style={styles.name}>{user.full_name}</Text>
+            <Text style={styles.balance}>₦{user.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
             <Text style={styles.interest}>Interest Credited Today <Text style={{color: colors.success}}>+₦1.74</Text></Text>
           </View>
-        </View>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.settingsBtn} onPress={() => setShowSettings(true)}>
           <Settings size={22} color={colors.textPrimary} />
         </TouchableOpacity>
@@ -70,18 +74,18 @@ export default function ProfileScreen() {
 
         {/* Menu Items */}
         <View style={styles.menuList}>
-          <MenuItem icon={<History size={20} color={colors.primary} />} label="Transaction History" />
-          <MenuItem icon={<BarChart2 size={20} color={colors.primary} />} label="Account Limits" />
-          <MenuItem icon={<CreditCard size={20} color={colors.primary} />} label="Bank Card/Account" />
-          <MenuItem icon={<ArrowLeftRight size={20} color={colors.primary} />} label="Transfer to Me" />
-          <MenuItem icon={<ShieldCheck size={20} color={colors.primary} />} label="Security Center" />
-          <MenuItem icon={<Headset size={20} color={colors.primary} />} label="Customer Service Center" />
-          <MenuItem icon={<Gift size={20} color={colors.primary} />} label="Invitation" extra="₦4,600 Bonus" />
+          <MenuItem icon={<History size={20} color={colors.primary} />} label="Transaction History" onPress={() => router.push('/profile/history')} />
+          <MenuItem icon={<BarChart2 size={20} color={colors.primary} />} label="Account Limits" onPress={() => router.push('/profile/limits')} />
+          <MenuItem icon={<CreditCard size={20} color={colors.primary} />} label="Bank Card/Account" onPress={() => router.push('/profile/bank-card')} />
+          <MenuItem icon={<ArrowLeftRight size={20} color={colors.primary} />} label="Transfer to Me" onPress={() => router.push('/profile/transfer-to-me')} />
+          <MenuItem icon={<ShieldCheck size={20} color={colors.primary} />} label="Security Center" onPress={() => router.push('/profile/security')} />
+          <MenuItem icon={<Headset size={20} color={colors.primary} />} label="Customer Service" onPress={() => router.push('/profile/customer-service')} />
+          <MenuItem icon={<Gift size={20} color={colors.primary} />} label="Invitation" extra="₦4,600 Bonus" onPress={() => router.push('/profile/invitation')} />
         </View>
 
         <TouchableOpacity 
           style={styles.logoutBtn}
-          onPress={() => router.replace('/(auth)/login')}
+          onPress={signOut}
         >
           <LogOut size={20} color={colors.error} />
           <Text style={styles.logoutText}>Log Out</Text>
@@ -93,7 +97,9 @@ export default function ProfileScreen() {
   );
 }
 
-const SettingsScreen = ({ onBack }: { onBack: () => void }) => (
+const SettingsScreen = ({ onBack }: { onBack: () => void }) => {
+  const router = useRouter();
+  return (
   <SafeAreaView style={styles.container}>
     <View style={styles.settingsHeader}>
       <TouchableOpacity onPress={onBack}>
@@ -107,23 +113,23 @@ const SettingsScreen = ({ onBack }: { onBack: () => void }) => (
       <Text style={styles.settingsSubtitle}>Configure your fmoni account preferences.</Text>
       
       <View style={styles.menuList}>
-        <SettingsItem icon={<Lock size={18} color={colors.textPrimary} />} label="Login Settings" />
-        <SettingsItem icon={<CreditCard size={18} color={colors.textPrimary} />} label="Payment Settings" />
-        <SettingsItem icon={<Settings size={18} color={colors.textPrimary} />} label="Saving Settings" />
-        <SettingsItem icon={<Palette size={18} color={colors.textPrimary} />} label="Homepage Settings" />
-        <SettingsItem icon={<ShieldCheck size={18} color={colors.textPrimary} />} label="Security Questions" badge="Not Set" />
-        <SettingsItem icon={<Bell size={18} color={colors.textPrimary} />} label="SMS Alert Subscription" />
-        <SettingsItem icon={<Clipboard size={18} color={colors.textPrimary} />} label="Access to Clipboard" />
-        <SettingsItem icon={<Palette size={18} color={colors.textPrimary} />} label="Themes" />
-        <SettingsItem icon={<ShieldCheck size={18} color={colors.textPrimary} />} label="Security Center" />
-        <SettingsItem icon={<UserX size={18} color={colors.error} />} label="Close Account" />
+        <SettingsItem icon={<Lock size={18} color={colors.textPrimary} />} label="Login Settings" onPress={() => router.push({ pathname: '/settings/[page]', params: { page: 'login' } })} />
+        <SettingsItem icon={<CreditCard size={18} color={colors.textPrimary} />} label="Payment Settings" onPress={() => router.push({ pathname: '/settings/[page]', params: { page: 'payment' } })} />
+        <SettingsItem icon={<Settings size={18} color={colors.textPrimary} />} label="Savings Settings" onPress={() => router.push({ pathname: '/settings/[page]', params: { page: 'savings' } })} />
+        <SettingsItem icon={<Palette size={18} color={colors.textPrimary} />} label="Homepage Settings" onPress={() => router.push({ pathname: '/settings/[page]', params: { page: 'homepage' } })} />
+        <SettingsItem icon={<ShieldCheck size={18} color={colors.textPrimary} />} label="Security Questions" badge="Not Set" onPress={() => router.push({ pathname: '/settings/[page]', params: { page: 'security' } })} />
+        <SettingsItem icon={<Bell size={18} color={colors.textPrimary} />} label="SMS Alert Subscription" onPress={() => router.push({ pathname: '/settings/[page]', params: { page: 'sms' } })} />
+        <SettingsItem icon={<Clipboard size={18} color={colors.textPrimary} />} label="Access to Clipboard" onPress={() => router.push({ pathname: '/settings/[page]', params: { page: 'clipboard' } })} />
+        <SettingsItem icon={<Palette size={18} color={colors.textPrimary} />} label="Themes" onPress={() => router.push({ pathname: '/settings/[page]', params: { page: 'themes' } })} />
+        <SettingsItem icon={<ShieldCheck size={18} color={colors.textPrimary} />} label="Security Center" onPress={() => router.push('/profile/security')} />
+        <SettingsItem icon={<UserX size={18} color={colors.error} />} label="Close Account" onPress={() => router.push({ pathname: '/settings/[page]', params: { page: 'close' } })} />
       </View>
     </ScrollView>
   </SafeAreaView>
-);
+);};
 
-const MenuItem = ({ icon, label, extra }: { icon: React.ReactNode, label: string, extra?: string }) => (
-  <TouchableOpacity style={styles.menuItem}>
+const MenuItem = ({ icon, label, extra, onPress }: { icon: React.ReactNode, label: string, extra?: string, onPress?: () => void }) => (
+  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
     <View style={styles.menuIconContainer}>{icon}</View>
     <View style={styles.menuContent}>
       <Text style={styles.menuLabel}>{label}</Text>
@@ -133,8 +139,8 @@ const MenuItem = ({ icon, label, extra }: { icon: React.ReactNode, label: string
   </TouchableOpacity>
 );
 
-const SettingsItem = ({ icon, label, badge }: { icon: React.ReactNode, label: string, badge?: string }) => (
-  <TouchableOpacity style={styles.settingsItem}>
+const SettingsItem = ({ icon, label, badge, onPress }: { icon: React.ReactNode, label: string, badge?: string, onPress?: () => void }) => (
+  <TouchableOpacity style={styles.settingsItem} onPress={onPress}>
     <View style={styles.settingsIconContainer}>{icon}</View>
     <Text style={styles.settingsLabel}>{label}</Text>
     {badge && (

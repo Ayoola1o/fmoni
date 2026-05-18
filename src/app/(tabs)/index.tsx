@@ -11,25 +11,25 @@ import {
   TrendingUp,
   Lock,
   Bell,
-  Search
+  Search,
+  Bus
 } from 'lucide-react-native';
 import GlassCard from '../../components/GlassCard';
 import ActionButton from '../../components/ActionButton';
+import { useAuth } from '../../context/AuthContext';
+import { useRouter } from 'expo-router';
 
 export default function DashboardScreen() {
-  // Mock data
-  const user = {
-    name: 'Sarah',
-    balance: 86967.98,
-    lockedBalance: 20000.00,
-    accountNumber: '3094857221',
-  };
+  const { user } = useAuth();
+  const router = useRouter();
 
   const recentTransactions = [
     { id: '1', title: 'Transport Release', subtitle: 'Daily Allocation', amount: '+₦1,000.00', type: 'allocation', time: '8:00 AM' },
     { id: '2', title: 'Starbucks Coffee', subtitle: 'Food & Drink', amount: '-₦3,500.00', type: 'expense', time: 'Yesterday' },
     { id: '3', title: 'Salary Deposit', subtitle: 'Tech Corp Ltd', amount: '+₦450,000.00', type: 'income', time: 'May 12' },
   ];
+
+  if (!user) return null;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -38,15 +38,15 @@ export default function DashboardScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.profileSection}>
+          <TouchableOpacity style={styles.profileSection} onPress={() => router.push('/profile/me')}>
             <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarText}>S</Text>
+              <Text style={styles.avatarText}>{user.full_name[0]}</Text>
             </View>
             <View>
               <Text style={styles.greeting}>Good Morning,</Text>
-              <Text style={styles.userName}>{user.name}!</Text>
+              <Text style={styles.userName}>{user.full_name.split(' ')[0]}!</Text>
             </View>
-          </View>
+          </TouchableOpacity>
           <View style={styles.headerActions}>
             <TouchableOpacity style={styles.iconBtn}>
               <Search size={22} color={colors.textPrimary} />
@@ -66,16 +66,16 @@ export default function DashboardScreen() {
               <Text style={styles.balanceLabel}>Total Balance</Text>
             </View>
             <TouchableOpacity>
-              <Text style={styles.accountNumText}>**** {user.accountNumber.slice(-4)}</Text>
+              <Text style={styles.accountNumText}>**** {user.account_number.slice(-4)}</Text>
             </TouchableOpacity>
           </View>
           
-          <Text style={styles.balanceAmount}>₦{user.balance.toLocaleString()}</Text>
+          <Text style={styles.balanceAmount}>₦{user.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
           
           <View style={styles.balanceFooter}>
             <View style={styles.lockedSection}>
               <Lock size={14} color={colors.accent} />
-              <Text style={styles.lockedText}>Locked: ₦{user.lockedBalance.toLocaleString()}</Text>
+              <Text style={styles.lockedText}>Locked: ₦{user.locked_balance.toLocaleString()}</Text>
             </View>
             <View style={styles.tag}>
               <Text style={styles.tagText}>Steady Bank</Text>
@@ -103,7 +103,7 @@ export default function DashboardScreen() {
           <GlassCard style={styles.allocationCard}>
             <View style={styles.allocationHeader}>
               <View style={styles.allocationIcon}>
-                <Text style={{fontSize: 20}}>🚌</Text>
+                <Bus size={22} color={colors.primary} />
               </View>
               <View>
                 <Text style={styles.allocationName}>Transport for Work</Text>
@@ -126,7 +126,7 @@ export default function DashboardScreen() {
         <View style={[styles.section, { marginBottom: 100 }]}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Transactions</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/profile/history')}>
               <Text style={styles.seeAll}>See All</Text>
             </TouchableOpacity>
           </View>

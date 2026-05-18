@@ -8,14 +8,31 @@ import {
   ArrowRight,
   TrendingUp,
   History,
-  Info
+  Info,
+  Play,
+  Bus,
+  Utensils
 } from 'lucide-react-native';
 import GlassCard from '../../components/GlassCard';
+import { useAuth } from '../../context/AuthContext';
 
 export default function AllocationsScreen() {
   const router = useRouter();
+  const { user, setUser } = useAuth() as any;
 
-  // Mock data for allocations
+  const handleSimulateRelease = () => {
+    if (!user) return;
+    const amount = 1000;
+    if (user.locked_balance < amount) return;
+
+    setUser({
+      ...user,
+      balance: user.balance + amount,
+      locked_balance: user.locked_balance - amount
+    });
+  };
+
+  // Mock data for allocations - uses lucide icon names instead of emoji
   const activeAllocations = [
     { 
       id: '1', 
@@ -23,7 +40,7 @@ export default function AllocationsScreen() {
       total: 20000, 
       remaining: 13000, 
       daily: 1000, 
-      icon: '🚌',
+      iconName: 'bus',
       nextRelease: 'Tomorrow, 8:00 AM'
     },
     { 
@@ -32,10 +49,17 @@ export default function AllocationsScreen() {
       total: 10000, 
       remaining: 4500, 
       daily: 500, 
-      icon: '🍱',
+      iconName: 'utensils',
       nextRelease: 'Tomorrow, 8:00 AM'
     }
   ];
+
+  const getAllocIcon = (iconName: string) => {
+    if (iconName === 'bus') return <Bus size={24} color={colors.primary} />;
+    if (iconName === 'utensils') return <Utensils size={24} color={colors.primary} />;
+    return <Layers size={24} color={colors.primary} />;
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -52,10 +76,16 @@ export default function AllocationsScreen() {
         <View style={styles.statsRow}>
           <GlassCard style={styles.statCard}>
             <Text style={styles.statLabel}>Locked Funds</Text>
-            <Text style={styles.statValue}>₦17,500</Text>
+            <Text style={styles.statValue}>₦{user?.locked_balance.toLocaleString()}</Text>
           </GlassCard>
           <GlassCard style={styles.statCard}>
-            <Text style={styles.statLabel}>Active Plans</Text>
+            <View style={styles.statHeader}>
+              <Text style={styles.statLabel}>Active Plans</Text>
+              <TouchableOpacity style={styles.miniBtn} onPress={handleSimulateRelease}>
+                <Play size={12} color={colors.textWhite} />
+                <Text style={styles.miniBtnText}>Release 1k</Text>
+              </TouchableOpacity>
+            </View>
             <Text style={styles.statValue}>2</Text>
           </GlassCard>
         </View>
@@ -73,7 +103,7 @@ export default function AllocationsScreen() {
           <GlassCard key={alloc.id} style={styles.allocCard}>
             <View style={styles.allocHeader}>
               <View style={styles.iconBox}>
-                <Text style={{fontSize: 24}}>{alloc.icon}</Text>
+                {getAllocIcon(alloc.iconName)}
               </View>
               <View style={styles.allocInfo}>
                 <Text style={styles.allocName}>{alloc.name}</Text>
@@ -162,6 +192,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: colors.textPrimary,
+  },
+  statHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  miniBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  miniBtnText: {
+    color: colors.textWhite,
+    fontSize: 9,
+    fontWeight: '700',
+    marginLeft: 4,
   },
   infoBox: {
     flexDirection: 'row',
